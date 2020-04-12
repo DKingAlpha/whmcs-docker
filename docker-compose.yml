@@ -1,0 +1,38 @@
+version: "2"
+
+services:
+    mysql:
+      image: mysql:5.5
+      hostname: mysql
+      restart: unless-stopped
+      networks:
+        whmcs:
+          ipv4_address: 192.168.110.2
+      volumes:
+        - /opt/whmcs/mysql:/var/lib/mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=your_password
+        - MYSQL_DATABASE=whmcs
+        - MYSQL_USER=whmcs
+        - MYSQL_PASSWORD=your_password
+
+    whmcs:
+      build: whmcs
+      hostname: whmcs
+      restart: unless-stopped
+      networks:
+        whmcs:
+          ipv4_address: 192.168.110.3
+      depends_on:
+        - mysql
+      volumes:
+        - /opt/whmcs/www:/var/www/whmcs
+        - ./whmcs/whmcs.conf:/etc/nginx/sites-enabled/default
+
+networks:
+  whmcs:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.110.0/24
+          gateway: 192.168.110.1
